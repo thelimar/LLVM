@@ -1,28 +1,30 @@
-#include "life.h"
-#include <stdlib.h>
-#include <SFML/Graphics.hpp>
+#include <cstdlib>
 #include <cstring> 
+#include "sim.h"
 
+void DrawGen();
+void CalcNextGen();
 
-void DrawGen(uint8_t* gen, sf::RenderWindow& window) {
-    window.clear();
-    sf::RectangleShape cell(sf::Vector2f(1, 1));
+int current_gen[SIZE_X * SIZE_Y];
+int next_gen[SIZE_X * SIZE_Y];
 
+void DrawGen() 
+{
     for (int y = 0; y < SIZE_Y; y++) 
     {
         for (int x = 0; x < SIZE_X; x++) 
         {
-            if (gen[y * SIZE_X + x] == 1) 
+            if (next_gen[y * SIZE_X + x] == 1) 
             {
-                cell.setPosition(x, y);
-                window.draw(cell);
+                SimPutPixel(x, y, 0xFFFF0000);
             }
         }
     }
-    window.display();
+    SimFlush();
 }
 
-void CalcNextGen(uint8_t* current_gen, uint8_t* next_gen)
+
+void CalcNextGen()
 {
     for (int y = 0; y < SIZE_Y; y++) 
     {
@@ -69,36 +71,29 @@ void CalcNextGen(uint8_t* current_gen, uint8_t* next_gen)
 }
 
 
-int main()
+void app()
 {
-    sf::RenderWindow window(sf::VideoMode(SIZE_X, SIZE_Y), "Game of Life");
-
-    uint8_t current_gen[SIZE_X * SIZE_Y];
-    uint8_t next_gen[SIZE_X * SIZE_Y];
-
     for (int y = 0; y < SIZE_Y; y++) 
     {
         for (int x = 0; x < SIZE_X; x++) {
-            current_gen[y * SIZE_X + x] = std::rand() % 2;
+            current_gen[y * SIZE_X + x] = SimRand() % 2;
         }
     }
 
-    while (window.isOpen()) 
+    for (int steps = 0; steps < MAX_STEPS; steps++)
     {
-        sf::Event event;
-        while (window.pollEvent(event)) 
+        CalcNextGen();
+        DrawGen();
+
+        
+        for (int x = 0; x < SIZE_X; x++) 
         {
-            if (event.type == sf::Event::Closed) 
+            for (int y = 0; y < SIZE_Y; y++) 
             {
-                window.close();
+                current_gen[y * SIZE_X + x] = next_gen[y * SIZE_X + x];
             }
         }
-
-        CalcNextGen(current_gen, next_gen);
-        DrawGen(next_gen, window);
-
-        std::swap(current_gen, next_gen);
     }
 
-    return 0;
+    return;
 }
