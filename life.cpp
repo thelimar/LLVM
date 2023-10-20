@@ -1,5 +1,3 @@
-#include <cstdlib>
-#include <cstring> 
 #include "sim.h"
 
 void DrawGen();
